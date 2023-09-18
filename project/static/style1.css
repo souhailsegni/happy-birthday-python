@@ -1,0 +1,31 @@
+/* Apply styles to the body */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f0f0f0;
+    margin: 0;
+    padding: 0;
+}
+
+/* Style the header image */
+img {
+    display: block;
+    margin: 0 auto;
+}
+
+/* Style the main content */
+h1 {
+    text-align: center;
+    color: #fc0505;
+    margin-top: 20px;
+    font-size: 30px;
+}
+
+p {
+    text-align: center;
+    font-size: 24px;
+    color: #0905f5;
+    margin-top: 10px;
+}
+
+/* Additional styles can be added as needed */
+

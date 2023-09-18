@@ -1,6 +1,6 @@
 
 
-from flask import Blueprint, request, jsonify, abort
+from flask import Blueprint, request, jsonify, abort, render_template
 from http import HTTPStatus
 from datetime import datetime
 from models import db, Birthday
@@ -23,18 +23,14 @@ def abort_if_date_of_birth_is_not_valid(date_of_birth_string):
         abort(HTTPStatus.BAD_REQUEST, message="Incorrect date format for '{}' date, should be YYYY-MM-DD".format(date_of_birth_string))
 
 @api.route('/')
-def hello():
-    return 'hello world'
+def index():
+    return render_template('index.html')
 
-@api.route('/hello/<username>', methods=['PUT', 'GET'])
+@api.route('/hello/<username>', methods=['POST', 'GET'])
 def add_update_message(username):
-    if request.method == 'PUT':
-        json_data = request.get_json(force=True)
-        
-        username = json_data['username']
-        print(username)
-        
-        date_of_birth = json_data['date_of_birth']
+    if request.method == 'POST':
+        username = request.form['username']
+        date_of_birth = request.form['date_of_birth']
         
         date_of_birth = datetime.strptime(date_of_birth, '%Y-%m-%d').date()
         today=datetime.now().date()
@@ -44,7 +40,7 @@ def add_update_message(username):
 
         
         elif date_of_birth >= today:
-              abort(HTTPStatus.BAD_REQUEST, message="'{}' date must be a date before the today date ('{}')".format(date_of_birth, today.strftime("%Y-%m-%d")))
+              abort(HTTPStatus.BAD_REQUEST, "'{}' date must be a date before the today date ('{}')".format(date_of_birth, today.strftime("%Y-%m-%d")))
            
         existing_user = Birthday.query.filter_by(username=username).first()
         
@@ -55,12 +51,13 @@ def add_update_message(username):
             new_user = Birthday(username=username, date_of_birth=date_of_birth)
             db.session.add(new_user)
             db.session.commit()
-        
-        return '', HTTPStatus.NO_CONTENT
+            
+        return f'User {username} added successfully',201
+        #return '', HTTPStatus.NO_CONTENT
     
     elif request.method == 'GET':
-        json_data = request.get_json(force=True)
-        username = json_data['username'] 
+        
+        username = request.args.get('username')  
         
         if not username:
             abort(HTTPStatus.BAD_REQUEST, message="Invalid username '{}'. <username> must contain only letters".format(username))
@@ -78,9 +75,13 @@ def add_update_message(username):
             days_until_birthday = (next_birthday - today).days
 
         if next_birthday == today:
-            return {'message': "Hello, {}! Happy birthday!".format(username)}, HTTPStatus.OK
+            message1 = f'Hello, {username}! Happy birthday!'
+            return render_template('message1.html',message=message1),200
+            #return {'message': "Hello, {}! Happy birthday!".format(username)}, HTTPStatus.OK
         else:
-            return {'message': "Hello, {}! Your birthday is in {} day(s)".format(username, days_until_birthday)}, HTTPStatus.OK
+            message2 = f'Hello, {username}! Your next birthday is in {days_until_birthday} day(s)'
+            return render_template('message2.html', message=message2),200 
+            #return {'message': "Hello, {}! Your birthday is in {} day(s)".format(username, days_until_birthday)}, HTTPStatus.OK
           
 @api.route('/healthz')
 def healthz():
